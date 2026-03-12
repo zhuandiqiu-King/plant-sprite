@@ -50,6 +50,8 @@ Page({
   },
 
   async loadProfile() {
+    const token = wx.getStorageSync('token')
+    if (!token) return
     this.setData({ loading: true })
     try {
       const data = await api.get('/api/user/profile')
@@ -136,6 +138,8 @@ Page({
 
   // 保存偏好到后端
   async savePreferences() {
+    const token = wx.getStorageSync('token')
+    if (!token) return
     const prefs = {
       chat_style: this.data.chatStyle,
       character: this.data.character,
