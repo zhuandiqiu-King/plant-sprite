@@ -1,5 +1,12 @@
 const api = require('../../utils/api')
 
+// 可爱后缀列表
+const CUTE_SUFFIXES = [
+  '小可爱', '宝宝', '小精灵', '萌萌', '小天使',
+  '豆豆', '团子', '糯糯', '乖乖', '泡泡',
+  '小丸子', '咕咕', '嘟嘟', '果果', '甜甜',
+]
+
 Page({
   data: {
     mode: 'add', // add 或 edit
@@ -15,7 +22,11 @@ Page({
     submitting: false,
     photoUrl: '',      // 云存储 fileID 或 base64 data URI
     photoLocalPath: '', // 本地预览临时路径
+    nameError: '',     // 名称重复错误提示
   },
+
+  // 防抖定时器
+  _nameCheckTimer: null,
 
   onLoad(options) {
     if (options.id) {
@@ -37,6 +48,37 @@ Page({
       })
     } catch (err) {
       wx.showToast({ title: '加载失败', icon: 'none' })
+    }
+  },
+
+  // ---- 名称重复检查 ----
+
+  /** 防抖检查名称是否重复 */
+  checkNameDebounced(name) {
+    if (this._nameCheckTimer) clearTimeout(this._nameCheckTimer)
+    if (!name || !name.trim()) {
+      this.setData({ nameError: '' })
+      return
+    }
+    this._nameCheckTimer = setTimeout(() => {
+      this.checkNameUnique(name.trim())
+    }, 500)
+  },
+
+  /** 调用后端检查名称唯一性 */
+  async checkNameUnique(name) {
+    try {
+      const { plantId, mode } = this.data
+      let url = `/api/plants/check-name?name=${encodeURIComponent(name)}`
+      if (mode === 'edit' && plantId) {
+        url += `&exclude_id=${plantId}`
+      }
+      const res = await api.get(url)
+      this.setData({ nameError: res.exists ? '该名称已存在，请换一个' : '' })
+      return res.exists
+    } catch (err) {
+      console.warn('名称检查失败', err)
+      return false
     }
   },
 
@@ -88,7 +130,6 @@ Page({
       },
       fail: (err) => {
         console.warn('云存储上传失败，回退到 base64', err)
-        // 回退：压缩后转 base64 存数据库
         this.compressAndEncode(filePath)
       },
     })
@@ -174,7 +215,11 @@ Page({
         this.setData({ identifying: true })
         wx.showLoading({ title: '识别中...' })
 
-        // 先用 canvas 缩小尺寸到 400px，再压缩质量
+        // 同步照片到表单预览区
+        this.setData({ photoLocalPath: tempPath })
+        this.uploadToCloud(tempPath)
+
+        // 同时进行 AI 识别
         this.resizeAndIdentify(tempPath)
       },
       fail: (err) => {
@@ -188,7 +233,6 @@ Page({
     wx.getImageInfo({
       src: filePath,
       success(info) {
-        // 缩放到最大 400px
         const maxSize = 400
         let w = info.width
         let h = info.height
@@ -205,14 +249,12 @@ Page({
         const img = canvas.createImage()
         img.onload = () => {
           ctx.drawImage(img, 0, 0, w, h)
-          // 导出为 base64（quality 0.6）
           const dataUrl = canvas.toDataURL('image/jpeg', 0.6)
           const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, '')
           console.log('压缩后图片大小:', Math.round(base64.length / 1024), 'KB')
           that.identifyImage(base64)
         }
         img.onerror = () => {
-          // canvas 方式失败，回退到 compressImage
           that.fallbackCompress(filePath)
         }
         img.src = filePath
@@ -253,6 +295,12 @@ Page({
     })
   },
 
+  /** 随机选一个可爱后缀 */
+  getRandomSuffix() {
+    const idx = Math.floor(Math.random() * CUTE_SUFFIXES.length)
+    return CUTE_SUFFIXES[idx]
+  },
+
   async identifyImage(base64) {
     const sizeKB = Math.round(base64.length / 1024)
     console.log('图片大小:', sizeKB, 'KB')
@@ -269,8 +317,19 @@ Page({
     try {
       console.log('识别图片大小:', Math.round(base64.length / 1024), 'KB')
       const result = await api.post('/api/plants/identify', { image: base64 })
+
+      // 给 AI 识别的名称加可爱后缀，确保名称唯一
+      let finalName = result.name + this.getRandomSuffix()
+      // 检查名称是否重复，重复则换后缀重试（最多 5 次）
+      for (let i = 0; i < 5; i++) {
+        const exists = await this.checkNameUnique(finalName)
+        if (!exists) break
+        finalName = result.name + this.getRandomSuffix()
+      }
+
       this.setData({
-        name: result.name,
+        name: finalName,
+        nameError: '',
         wateringInterval: result.watering_interval,
         category: result.category,
         note: result.description + '\n' + result.care_tips,
@@ -288,6 +347,7 @@ Page({
 
   onNameInput(e) {
     this.setData({ name: e.detail.value })
+    this.checkNameDebounced(e.detail.value)
   },
 
   onIntervalInput(e) {
@@ -307,11 +367,24 @@ Page({
   },
 
   async handleSubmit() {
-    const { name, wateringInterval, category, note, mode, plantId, photoUrl } = this.data
+    const { name, wateringInterval, category, note, mode, plantId, photoUrl, nameError } = this.data
     if (!name.trim()) {
       wx.showToast({ title: '请输入植物名称', icon: 'none' })
       return
     }
+    // 名称重复时阻止提交
+    if (nameError) {
+      wx.showToast({ title: nameError, icon: 'none' })
+      return
+    }
+
+    // 提交前再做一次同步校验
+    const exists = await this.checkNameUnique(name.trim())
+    if (exists) {
+      wx.showToast({ title: '该名称已存在，请换一个', icon: 'none' })
+      return
+    }
+
     this.setData({ submitting: true })
 
     const payload = {

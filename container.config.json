@@ -2,6 +2,6 @@
   "containerPort": 80,
   "dockerfilePath": "Dockerfile",
   "buildDir": ".",
-  "minNum": 0,
+  "minNum": 1,
   "maxNum": 3
 }

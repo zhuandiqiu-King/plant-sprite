@@ -124,3 +124,11 @@
 .submit-btn {
   margin-top: 16rpx;
 }
+
+/* 名称重复错误提示 */
+.name-error {
+  font-size: 24rpx;
+  color: #e53935;
+  margin-top: 8rpx;
+  display: block;
+}

@@ -22,6 +22,7 @@
     <view class="form-item">
       <text class="label">植物名称</text>
       <input class="input" value="{{name}}" bindinput="onNameInput" placeholder="输入植物名称" />
+      <text class="name-error" wx:if="{{nameError}}">{{nameError}}</text>
     </view>
 
     <view class="form-item">

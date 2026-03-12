@@ -15,6 +15,20 @@ from app import crud
 router = APIRouter(prefix="/api/plants", tags=["plants"])
 
 
+# ---- 名称重复检查 ----
+
+@router.get("/check-name")
+def check_name(
+    name: str,
+    exclude_id: int = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """检查植物名称是否已存在（当前用户范围内）"""
+    exists = crud.check_plant_name(db, name.strip(), user_id=current_user.id, exclude_id=exclude_id)
+    return {"exists": exists}
+
+
 # ---- 拍照识别植物 ----
 
 class IdentifyRequest(BaseModel):

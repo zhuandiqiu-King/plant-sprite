@@ -9,6 +9,16 @@ from app.models import Plant, WateringRecord
 from app.schemas import PlantCreate, PlantUpdate
 
 
+def check_plant_name(db: Session, name: str, user_id: int | None = None, exclude_id: int | None = None) -> bool:
+    """检查当前用户是否已有同名植物，返回 True 表示名称已存在"""
+    stmt = select(Plant).where(Plant.name == name)
+    if user_id is not None:
+        stmt = stmt.where(Plant.user_id == user_id)
+    if exclude_id is not None:
+        stmt = stmt.where(Plant.id != exclude_id)
+    return db.scalars(stmt).first() is not None
+
+
 def create_plant(db: Session, data: PlantCreate, user_id: int | None = None) -> Plant:
     """添加植物，next_watering_date = 今天 + interval"""
     plant = Plant(
