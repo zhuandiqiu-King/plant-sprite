@@ -3,7 +3,7 @@
  */
 const { getToken } = require('./auth')
 
-const BASE_URL = '' // 云托管环境使用相对路径
+const BASE_URL = 'https://flask-h72v-232253-7-1410545899.sh.run.tcloudbase.com'
 
 function request(options) {
   return new Promise((resolve, reject) => {
