@@ -43,31 +43,51 @@ Page({
       count: 1,
       mediaType: ['image'],
       sourceType: ['camera', 'album'],
+      sizeType: ['compressed'],
       success: (res) => {
         const tempPath = res.tempFiles[0].tempFilePath
         this.setData({ identifying: true })
         wx.showLoading({ title: '识别中...' })
 
-        // 读取文件并转 base64
-        const fs = wx.getFileSystemManager()
-        fs.readFile({
-          filePath: tempPath,
-          encoding: 'base64',
-          success: (fileRes) => {
-            this.identifyImage(fileRes.data)
+        // 压缩图片后再转 base64
+        wx.compressImage({
+          src: tempPath,
+          quality: 50,
+          success: (compRes) => {
+            this.readAndIdentify(compRes.tempFilePath)
           },
           fail: () => {
-            wx.hideLoading()
-            this.setData({ identifying: false })
-            wx.showToast({ title: '读取图片失败', icon: 'none' })
+            // 压缩失败，直接用原图
+            this.readAndIdentify(tempPath)
           },
         })
+      },
+      fail: (err) => {
+        console.error('chooseMedia fail', err)
+      },
+    })
+  },
+
+  readAndIdentify(filePath) {
+    const fs = wx.getFileSystemManager()
+    fs.readFile({
+      filePath,
+      encoding: 'base64',
+      success: (fileRes) => {
+        this.identifyImage(fileRes.data)
+      },
+      fail: (err) => {
+        console.error('readFile fail', err)
+        wx.hideLoading()
+        this.setData({ identifying: false })
+        wx.showToast({ title: '读取图片失败', icon: 'none' })
       },
     })
   },
 
   async identifyImage(base64) {
     try {
+      console.log('识别图片大小:', Math.round(base64.length / 1024), 'KB')
       const result = await api.post('/api/plants/identify', { image: base64 })
       this.setData({
         name: result.name,
@@ -78,7 +98,8 @@ Page({
       })
       wx.showToast({ title: '识别成功', icon: 'success' })
     } catch (err) {
-      wx.showToast({ title: '识别失败', icon: 'none' })
+      console.error('识别失败', err)
+      wx.showToast({ title: '识别失败，请重试', icon: 'none' })
     } finally {
       wx.hideLoading()
       this.setData({ identifying: false })
