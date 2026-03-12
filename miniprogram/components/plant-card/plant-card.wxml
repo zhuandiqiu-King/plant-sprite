@@ -18,8 +18,10 @@
       <text class="plant-category">{{plant.category === 'indoor' ? '🏠 室内' : '☀️ 室外'}}</text>
     </view>
     <view class="card-body">
-      <text class="interval">🕐 每 {{plant.watering_interval}} 天浇水</text>
-      <text class="status {{statusClass}}">{{statusEmoji}} {{statusText}}</text>
+      <text class="interval">每 {{plant.watering_interval}} 天浇水</text>
+      <text class="status {{statusClass}}">{{statusText}}</text>
     </view>
   </view>
+  <!-- 箭头 -->
+  <text class="card-arrow">›</text>
 </view>

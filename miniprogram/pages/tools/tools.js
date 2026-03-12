@@ -7,7 +7,7 @@ Page({
         icon: '🌿',
         desc: '浇水提醒与植物养护',
         active: true,
-        url: '/pages/index/index',
+        url: '/pages/plant/index/index',
       },
       {
         id: 'coming1',

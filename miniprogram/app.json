@@ -4,19 +4,19 @@
     "pages/tools/tools",
     "pages/profile/profile",
     "pages/login/login",
-    "pages/index/index",
-    "pages/add/add",
-    "pages/detail/detail"
+    "pages/plant/index/index",
+    "pages/plant/add/add",
+    "pages/plant/detail/detail"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#07c160",
-    "navigationBarTitleText": "Plant Sprite",
-    "navigationBarTextStyle": "white",
-    "backgroundColor": "#f5f5f5"
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTitleText": "夯夯家",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F5F0EB"
   },
   "tabBar": {
     "color": "#999",
-    "selectedColor": "#07c160",
+    "selectedColor": "#2ECC71",
     "backgroundColor": "#fff",
     "borderStyle": "white",
     "list": [

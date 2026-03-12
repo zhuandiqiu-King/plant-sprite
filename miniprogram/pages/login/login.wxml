@@ -1,7 +1,13 @@
 <view class="login-page">
+  <!-- 顶部装饰背景 -->
+  <view class="login-deco-bg">
+    <view class="deco-circle deco-circle-1"></view>
+    <view class="deco-circle deco-circle-2"></view>
+  </view>
+
   <view class="logo-area">
-    <text class="logo-icon">🌱</text>
-    <text class="logo-title">Plant Sprite</text>
+    <text class="logo-icon">🏠</text>
+    <text class="logo-title">夯夯家</text>
     <text class="logo-desc">你的家庭生活小助手</text>
   </view>
 
@@ -10,7 +16,8 @@
     <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
       <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
       <view wx:else class="avatar-placeholder">
-        <text class="avatar-placeholder-text">点击选择头像</text>
+        <text class="avatar-placeholder-icon">📷</text>
+        <text class="avatar-placeholder-text">选择头像</text>
       </view>
     </button>
     <input
@@ -23,6 +30,8 @@
   </view>
 
   <button class="login-btn" bindtap="handleLogin" loading="{{loading}}">
-    微信授权登录
+    🏠 开始使用
   </button>
+
+  <text class="login-footer">登录即表示同意使用协议</text>
 </view>

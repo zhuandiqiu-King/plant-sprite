@@ -53,20 +53,19 @@
     <block wx:if="{{!voiceMode}}">
       <input
         class="msg-input"
-        placeholder="输入消息..."
+        placeholder="和夯夯聊聊..."
         value="{{inputValue}}"
         bindinput="onInput"
         confirm-type="send"
         bindconfirm="handleSend"
         disabled="{{loading}}"
       />
-      <button
+      <view
         class="send-btn {{inputValue.trim() && !loading ? 'send-active' : ''}}"
         bindtap="handleSend"
-        disabled="{{!inputValue.trim() || loading}}"
       >
-        发送
-      </button>
+        <text class="send-icon">➤</text>
+      </view>
     </block>
 
     <!-- 语音输入模式 -->
@@ -77,7 +76,7 @@
       bindtouchend="stopRecord"
       bindtouchcancel="stopRecord"
     >
-      <text>{{recording ? '🔴 松开结束' : '🎤 按住说话'}}</text>
+      <text>{{recording ? '🔴 松开结束' : '🎙️ 按住说话'}}</text>
     </view>
   </view>
 </view>

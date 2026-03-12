@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "Plant Sprite",
+  "navigationBarTitleText": "植物管理",
   "enablePullDownRefresh": true,
   "usingComponents": {
     "plant-card": "/components/plant-card/plant-card"

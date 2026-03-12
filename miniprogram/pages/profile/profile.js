@@ -152,8 +152,8 @@ Page({
   // 关于我们
   handleAbout() {
     wx.showModal({
-      title: '关于植物精灵',
-      content: 'Plant Sprite v1.0.0\n一款 AI 驱动的家庭生活助手\n🌱 让生活更美好',
+      title: '关于夯夯家',
+      content: '夯夯家 v2.0.0\n一款 AI 驱动的家庭生活助手\n🏠 让生活更美好',
       showCancel: false,
     })
   },

@@ -1,19 +1,24 @@
 .container {
   padding: 24rpx;
+  background: #F5F0EB;
+  min-height: 100vh;
 }
 
 .identify-btn {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: #fff;
+  color: #2ECC71;
   text-align: center;
-  padding: 24rpx;
-  border-radius: 16rpx;
+  padding: 28rpx;
+  border-radius: 24rpx;
   margin-bottom: 32rpx;
   font-size: 30rpx;
+  font-weight: 500;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  border: 2rpx dashed #A8E6CF;
 }
 
 .identify-btn:active {
-  background: #c8e6c9;
+  background: #E8F8F0;
 }
 
 /* 照片选择区域 */
@@ -24,28 +29,28 @@
 .photo-picker {
   width: 200rpx;
   height: 200rpx;
-  border: 2rpx dashed #ccc;
-  border-radius: 16rpx;
+  border: 3rpx dashed #A8E6CF;
+  border-radius: 24rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #fafafa;
+  background: #fff;
 }
 
 .photo-picker:active {
-  background: #f0f0f0;
+  background: #E8F8F0;
 }
 
 .photo-add-icon {
   font-size: 64rpx;
-  color: #999;
+  color: #2ECC71;
   line-height: 1;
 }
 
 .photo-add-text {
   font-size: 24rpx;
-  color: #999;
+  color: #95A5A6;
   margin-top: 8rpx;
 }
 
@@ -58,32 +63,34 @@
 .photo-img {
   width: 200rpx;
   height: 200rpx;
-  border-radius: 16rpx;
+  border-radius: 24rpx;
 }
 
 .photo-remove {
   position: absolute;
   top: -16rpx;
   right: -16rpx;
-  width: 40rpx;
-  height: 40rpx;
-  background: rgba(0, 0, 0, 0.5);
+  width: 44rpx;
+  height: 44rpx;
+  background: #E74C3C;
   color: #fff;
   border-radius: 50%;
   text-align: center;
-  line-height: 40rpx;
+  line-height: 44rpx;
   font-size: 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(231, 76, 60, 0.3);
 }
 
 .form {
   background: #fff;
-  border-radius: 16rpx;
-  padding: 24rpx;
+  border-radius: 24rpx;
+  padding: 28rpx;
   margin-bottom: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
 }
 
 .form-item {
-  margin-bottom: 24rpx;
+  margin-bottom: 28rpx;
 }
 
 .form-item:last-child {
@@ -92,33 +99,38 @@
 
 .label {
   font-size: 28rpx;
-  color: #666;
-  margin-bottom: 8rpx;
+  color: #95A5A6;
+  margin-bottom: 12rpx;
   display: block;
+  font-weight: 500;
 }
 
 .input {
-  border: 1rpx solid #e0e0e0;
-  border-radius: 8rpx;
-  padding: 16rpx;
+  border: none;
+  border-bottom: 2rpx solid #E8E8E8;
+  border-radius: 0;
+  padding: 16rpx 0;
   font-size: 28rpx;
+  color: #2C3E50;
 }
 
 .picker {
-  border: 1rpx solid #e0e0e0;
-  border-radius: 8rpx;
-  padding: 16rpx;
+  border: none;
+  border-bottom: 2rpx solid #E8E8E8;
+  border-radius: 0;
+  padding: 16rpx 0;
   font-size: 28rpx;
-  color: #333;
+  color: #2C3E50;
 }
 
 .textarea {
-  border: 1rpx solid #e0e0e0;
-  border-radius: 8rpx;
+  border: 2rpx solid #E8E8E8;
+  border-radius: 16rpx;
   padding: 16rpx;
   font-size: 28rpx;
   width: 100%;
   box-sizing: border-box;
+  color: #2C3E50;
 }
 
 .submit-btn {
@@ -128,7 +140,7 @@
 /* 名称重复错误提示 */
 .name-error {
   font-size: 24rpx;
-  color: #e53935;
+  color: #E74C3C;
   margin-top: 8rpx;
   display: block;
 }

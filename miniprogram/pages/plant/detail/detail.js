@@ -42,7 +42,7 @@ Page({
   },
 
   handleEdit() {
-    wx.navigateTo({ url: `/pages/add/add?id=${this.data.plantId}` })
+    wx.navigateTo({ url: `/pages/plant/add/add?id=${this.data.plantId}` })
   },
 
   handlePreviewPhoto() {

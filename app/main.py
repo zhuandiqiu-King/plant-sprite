@@ -22,7 +22,7 @@ with engine.connect() as conn:
         conn.execute(text("ALTER TABLE users ADD COLUMN preferences TEXT"))
         conn.commit()
 
-app = FastAPI(title="Plant Sprite", description="植物浇水提醒服务", version="1.0.0")
+app = FastAPI(title="夯夯家", description="家庭生活助手服务", version="2.0.0")
 
 app.include_router(auth.router)
 app.include_router(plants.router)

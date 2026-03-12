@@ -79,10 +79,10 @@ Page({
 
   goDetail(e) {
     const id = e.detail.id
-    wx.navigateTo({ url: `/pages/detail/detail?id=${id}` })
+    wx.navigateTo({ url: `/pages/plant/detail/detail?id=${id}` })
   },
 
   goAdd() {
-    wx.navigateTo({ url: '/pages/add/add' })
+    wx.navigateTo({ url: '/pages/plant/add/add' })
   },
 })

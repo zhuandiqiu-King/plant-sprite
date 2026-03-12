@@ -1,5 +1,5 @@
 {
-  "description": "Plant Sprite 微信小程序",
+  "description": "夯夯家 - 家庭生活助手微信小程序",
   "packOptions": {
     "ignore": [],
     "include": []
@@ -31,7 +31,7 @@
   },
   "compileType": "miniprogram",
   "appid": "wx45464b555b7bd8a3",
-  "projectname": "plant-sprite",
+  "projectname": "hanghangjia",
   "condition": {},
   "simulatorPluginLibVersion": {},
   "editorSetting": {},

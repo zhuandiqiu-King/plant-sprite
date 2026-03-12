@@ -1,0 +1,241 @@
+.container {
+  padding: 24rpx;
+  padding-bottom: 160rpx;
+  background: #F5F0EB;
+  min-height: 100vh;
+}
+
+/* 顶部问候 */
+.greeting-area {
+  padding: 20rpx 0 24rpx;
+}
+
+.greeting-text {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #2C3E50;
+}
+
+.greeting-sub {
+  display: block;
+  font-size: 24rpx;
+  color: #95A5A6;
+  margin-top: 8rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #2C3E50;
+  margin-bottom: 16rpx;
+  margin-top: 16rpx;
+}
+
+.plant-list-title {
+  margin-top: 28rpx;
+}
+
+/* ---- 浇水清单 ---- */
+.reminder-section {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.reminder-deco-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6rpx;
+  background: linear-gradient(90deg, #3498DB, #2ECC71);
+}
+
+.reminder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.reminder-section .section-title {
+  margin: 0;
+  color: #2C3E50;
+  font-size: 32rpx;
+}
+
+.water-all-btn {
+  background: linear-gradient(135deg, #F39C12, #E67E22);
+  color: #fff;
+  font-size: 24rpx;
+  padding: 10rpx 28rpx;
+  border-radius: 24rpx;
+  font-weight: 500;
+  box-shadow: 0 4rpx 12rpx rgba(243, 156, 18, 0.25);
+}
+
+.water-all-btn:active {
+  opacity: 0.85;
+  transform: scale(0.96);
+}
+
+.reminder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.reminder-item {
+  background: #F8F9FA;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reminder-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.reminder-photo {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  border: 2rpx solid #A8E6CF;
+}
+
+.reminder-photo-placeholder {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #E8F8F0, #A8E6CF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+}
+
+.reminder-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.reminder-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #2C3E50;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reminder-interval {
+  font-size: 22rpx;
+  color: #95A5A6;
+  margin-top: 6rpx;
+}
+
+.water-btn {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #74B9FF, #3498DB);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(52, 152, 219, 0.25);
+}
+
+.water-btn:active {
+  transform: scale(0.9);
+}
+
+/* ---- 全部浇完提示 ---- */
+.all-done {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  text-align: center;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.all-done-icon {
+  display: block;
+  font-size: 60rpx;
+  margin-bottom: 12rpx;
+}
+
+.all-done-text {
+  font-size: 28rpx;
+  color: #2ECC71;
+  font-weight: 500;
+}
+
+/* ---- 空状态 ---- */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 160rpx;
+}
+
+.empty-icon {
+  font-size: 160rpx;
+  margin-bottom: 20rpx;
+  animation: floatUp 3s ease-in-out infinite;
+}
+
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16rpx); }
+}
+
+.empty-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #2C3E50;
+  margin-bottom: 12rpx;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #95A5A6;
+}
+
+/* ---- FAB ---- */
+.fab {
+  position: fixed;
+  right: 40rpx;
+  bottom: 80rpx;
+  width: 110rpx;
+  height: 110rpx;
+  line-height: 110rpx;
+  text-align: center;
+  background: linear-gradient(135deg, #2ECC71, #27AE60);
+  color: #fff;
+  font-size: 60rpx;
+  border-radius: 50%;
+  box-shadow: 0 8rpx 24rpx rgba(46, 204, 113, 0.4);
+}
+
+.fab:active {
+  transform: scale(0.92);
+}

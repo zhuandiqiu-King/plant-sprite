@@ -1,6 +1,6 @@
 .tools-page {
   min-height: 100vh;
-  background: #f0f5f0;
+  background: #F5F0EB;
   padding: 0 24rpx 40rpx;
 }
 
@@ -13,13 +13,13 @@
   display: block;
   font-size: 40rpx;
   font-weight: bold;
-  color: #333;
+  color: #2C3E50;
 }
 
 .header-desc {
   display: block;
   font-size: 24rpx;
-  color: #999;
+  color: #95A5A6;
   margin-top: 8rpx;
 }
 
@@ -27,16 +27,16 @@
 .tools-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 24rpx;
+  gap: 20rpx;
 }
 
 .tool-card {
-  width: calc(50% - 12rpx);
+  width: calc(50% - 10rpx);
   background: #fff;
   border-radius: 24rpx;
   padding: 36rpx 24rpx;
   text-align: center;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
   position: relative;
   transition: transform 0.2s;
 }
@@ -46,26 +46,31 @@
 }
 
 .tool-disabled {
-  opacity: 0.6;
+  opacity: 0.45;
 }
 
 .tool-icon {
-  font-size: 64rpx;
-  margin-bottom: 16rpx;
+  width: 80rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  margin: 0 auto 16rpx;
+  font-size: 48rpx;
+  background: linear-gradient(135deg, #E8F8F0, #D4EFDF);
+  border-radius: 50%;
 }
 
 .tool-name {
   display: block;
   font-size: 30rpx;
   font-weight: bold;
-  color: #333;
+  color: #2C3E50;
   margin-bottom: 8rpx;
 }
 
 .tool-desc {
   display: block;
   font-size: 22rpx;
-  color: #999;
+  color: #95A5A6;
 }
 
 .coming-badge {
@@ -73,8 +78,9 @@
   top: 16rpx;
   right: 16rpx;
   font-size: 18rpx;
-  color: #ff9800;
-  background: #fff3e0;
-  padding: 4rpx 12rpx;
-  border-radius: 10rpx;
+  color: #F39C12;
+  background: #FFF8E1;
+  padding: 4rpx 14rpx;
+  border-radius: 16rpx;
+  font-weight: 500;
 }

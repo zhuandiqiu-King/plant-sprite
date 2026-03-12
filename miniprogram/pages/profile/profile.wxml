@@ -1,11 +1,13 @@
 <view class="profile-page">
   <!-- 头像区域 -->
   <view class="user-header">
+    <view class="header-deco"></view>
     <view class="avatar-wrap">
       <image wx:if="{{avatarUrl}}" class="user-avatar" src="{{avatarUrl}}" mode="aspectFill" />
       <view wx:else class="avatar-placeholder">😊</view>
     </view>
     <text class="user-name">{{nickname || '未设置昵称'}}</text>
+    <text class="user-tag">🌿 植物爱好者</text>
   </view>
 
   <!-- AI 对话偏好 -->
@@ -21,7 +23,8 @@
       bindchange="onStyleChange"
     >
       <view class="setting-item">
-        <text class="item-label">🎭 对话风格</text>
+        <view class="item-icon icon-style">🎭</view>
+        <text class="item-label">对话风格</text>
         <view class="item-value">
           <text>{{styleOptions[styleIndex].label}}</text>
           <text class="arrow">›</text>
@@ -38,7 +41,8 @@
       bindchange="onCharacterChange"
     >
       <view class="setting-item">
-        <text class="item-label">🌟 角色人设</text>
+        <view class="item-icon icon-char">🌟</view>
+        <text class="item-label">角色人设</text>
         <view class="item-value">
           <text>{{characterOptions[characterIndex].label}}</text>
           <text class="arrow">›</text>
@@ -59,7 +63,8 @@
 
     <!-- 称呼方式 -->
     <view class="setting-item">
-      <text class="item-label">💌 称呼方式</text>
+      <view class="item-icon icon-nick">💌</view>
+      <text class="item-label">称呼方式</text>
       <input
         class="nickname-input"
         placeholder="如：小主人、亲爱的"
@@ -80,18 +85,22 @@
     <view class="section-title">⚙️ 账号管理</view>
 
     <view class="setting-item" bindtap="handleEditNickname">
-      <text class="item-label">📝 修改昵称</text>
+      <view class="item-icon icon-edit">✏️</view>
+      <text class="item-label">修改昵称</text>
       <text class="arrow">›</text>
     </view>
 
     <view class="setting-item" bindtap="handleAbout">
-      <text class="item-label">📋 关于我们</text>
+      <view class="item-icon icon-about">📋</view>
+      <text class="item-label">关于我们</text>
       <text class="arrow">›</text>
     </view>
+  </view>
 
-    <view class="setting-item logout-item" bindtap="handleLogout">
-      <text class="item-label">🚪 退出登录</text>
-      <text class="arrow">›</text>
+  <!-- 退出登录 -->
+  <view class="section logout-section" bindtap="handleLogout">
+    <view class="setting-item logout-item">
+      <text class="item-label">退出登录</text>
     </view>
   </view>
 </view>
