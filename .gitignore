@@ -3,3 +3,4 @@ __pycache__/
 plant_sprite.db
 .pytest_cache/
 .DS_Store
+miniprogram/project.private.config.json

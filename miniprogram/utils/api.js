@@ -1,7 +1,7 @@
 /**
- * 网络请求封装，自动带 token，401 自动跳登录
+ * 网络请求封装，通过云托管内网调用，自动带 token，401 跳登录
  */
-const BASE_URL = 'https://flask-h72v-232253-7-1410545899.sh.run.tcloudbase.com'
+const SERVICE_NAME = 'flask-h72v'
 
 function request(options) {
   return new Promise((resolve, reject) => {
@@ -11,11 +11,15 @@ function request(options) {
       header['Authorization'] = `Bearer ${token}`
     }
 
-    wx.request({
-      url: BASE_URL + options.url,
+    wx.cloud.callContainer({
+      config: {
+        env: 'prod-0g02is9d648082af',
+      },
+      service: SERVICE_NAME,
+      path: options.url,
       method: options.method || 'GET',
-      data: options.data,
       header,
+      data: options.data,
       success(res) {
         if (res.statusCode === 401) {
           wx.removeStorageSync('token')
@@ -24,12 +28,14 @@ function request(options) {
           return
         }
         if (res.statusCode >= 400) {
-          reject(new Error(res.data.detail || '请求失败'))
+          const detail = res.data && res.data.detail ? res.data.detail : '请求失败'
+          reject(new Error(detail))
           return
         }
         resolve(res.data)
       },
       fail(err) {
+        console.error('callContainer fail', err)
         reject(err)
       },
     })
