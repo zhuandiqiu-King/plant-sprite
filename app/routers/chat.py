@@ -162,42 +162,53 @@ async def _call_chat(system_prompt: str, user_message: str) -> str:
 
 
 async def _speech_to_text(audio_url: str) -> str:
-    """下载音频文件，用 Dashscope OpenAI 兼容接口同步识别"""
+    """用千问 ASR 短音频同步接口识别语音"""
     import httpx
 
-    async with httpx.AsyncClient(timeout=60) as client:
-        # 1. 下载音频文件
-        try:
-            dl_resp = await client.get(audio_url)
-            dl_resp.raise_for_status()
-            audio_data = dl_resp.content
-        except Exception as e:
-            print(f"下载音频失败: {e}")
-            raise HTTPException(status_code=500, detail="音频文件下载失败")
+    url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
+    headers = {
+        "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": "qwen-audio-asr",
+        "input": {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"audio": audio_url}
+                    ]
+                }
+            ]
+        },
+    }
 
-        # 2. 用 multipart 上传到 Dashscope 语音识别（OpenAI 兼容格式）
-        url = "https://dashscope.aliyuncs.com/compatible-mode/v1/audio/transcriptions"
-        headers = {
-            "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
-        }
-        files = {
-            "file": ("audio.mp3", audio_data, "audio/mpeg"),
-        }
-        form_data = {
-            "model": "qwen-audio-asr",
-        }
-
-        try:
-            resp = await client.post(url, headers=headers, files=files, data=form_data)
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.post(url, json=payload, headers=headers)
             data = resp.json()
             print(f"语音识别响应: {data}")
 
-            # OpenAI 兼容格式返回 { "text": "识别结果" }
-            text = data.get("text", "")
-            return text.strip()
-        except Exception as e:
-            print(f"语音识别请求失败: {e}")
-            raise HTTPException(status_code=500, detail="语音识别失败")
+            # 提取识别文字
+            output = data.get("output", {})
+            choices = output.get("choices", [])
+            if choices:
+                content = choices[0].get("message", {}).get("content", [])
+                if content and isinstance(content, list):
+                    return content[0].get("text", "").strip()
+                elif isinstance(content, str):
+                    return content.strip()
+
+            # 兼容其他返回格式
+            text = output.get("text", "")
+            if text:
+                return text.strip()
+
+            return ""
+    except Exception as e:
+        print(f"语音识别请求失败: {e}")
+        raise HTTPException(status_code=500, detail="语音识别失败")
 
 
 @router.post("/chat/voice", response_model=VoiceChatResponse)
