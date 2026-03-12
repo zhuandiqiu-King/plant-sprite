@@ -13,6 +13,8 @@ Page({
     categoryIndex: 0,
     identifying: false,
     submitting: false,
+    photoUrl: '',      // 云存储 fileID
+    photoLocalPath: '', // 本地预览临时路径
   },
 
   onLoad(options) {
@@ -31,13 +33,73 @@ Page({
         category: plant.category,
         note: plant.note || '',
         categoryIndex: plant.category === 'outdoor' ? 1 : 0,
+        photoUrl: plant.photo_url || '',
       })
     } catch (err) {
       wx.showToast({ title: '加载失败', icon: 'none' })
     }
   },
 
-  // 拍照识别
+  // ---- 植物照片 ----
+
+  handleChoosePhoto() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['camera', 'album'],
+      sizeType: ['compressed'],
+      success: (res) => {
+        const tempPath = res.tempFiles[0].tempFilePath
+        this.setData({ photoLocalPath: tempPath })
+        this.uploadToCloud(tempPath)
+      },
+    })
+  },
+
+  handleRemovePhoto() {
+    const oldFileID = this.data.photoUrl
+    this.setData({ photoUrl: '', photoLocalPath: '' })
+    // 清理云存储中的旧文件
+    if (oldFileID) {
+      wx.cloud.deleteFile({ fileList: [oldFileID] })
+    }
+  },
+
+  handlePreviewPhoto() {
+    const src = this.data.photoLocalPath || this.data.photoUrl
+    if (src) {
+      wx.previewImage({ urls: [src], current: src })
+    }
+  },
+
+  uploadToCloud(filePath) {
+    wx.showLoading({ title: '上传中...' })
+    const cloudPath = `plant-photos/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`
+
+    wx.cloud.uploadFile({
+      cloudPath,
+      filePath,
+      success: (res) => {
+        this.setData({ photoUrl: res.fileID })
+        wx.showToast({ title: '照片已上传', icon: 'success' })
+      },
+      fail: (err) => {
+        console.error('上传照片失败', err)
+        this.setData({ photoLocalPath: '' })
+        wx.showModal({
+          title: '上传失败',
+          content: '照片上传失败，请稍后重试。你可以先填写其他信息。',
+          showCancel: false,
+        })
+      },
+      complete: () => {
+        wx.hideLoading()
+      },
+    })
+  },
+
+  // ---- 拍照识别 ----
+
   handleIdentify() {
     wx.chooseMedia({
       count: 1,
@@ -49,21 +111,64 @@ Page({
         this.setData({ identifying: true })
         wx.showLoading({ title: '识别中...' })
 
-        // 压缩图片后再转 base64
-        wx.compressImage({
-          src: tempPath,
-          quality: 50,
-          success: (compRes) => {
-            this.readAndIdentify(compRes.tempFilePath)
-          },
-          fail: () => {
-            // 压缩失败，直接用原图
-            this.readAndIdentify(tempPath)
-          },
-        })
+        // 先用 canvas 缩小尺寸到 400px，再压缩质量
+        this.resizeAndIdentify(tempPath)
       },
       fail: (err) => {
         console.error('chooseMedia fail', err)
+      },
+    })
+  },
+
+  resizeAndIdentify(filePath) {
+    const that = this
+    wx.getImageInfo({
+      src: filePath,
+      success(info) {
+        // 缩放到最大 400px
+        const maxSize = 400
+        let w = info.width
+        let h = info.height
+        if (w > h && w > maxSize) {
+          h = Math.round(h * maxSize / w)
+          w = maxSize
+        } else if (h > maxSize) {
+          w = Math.round(w * maxSize / h)
+          h = maxSize
+        }
+
+        const canvas = wx.createOffscreenCanvas({ type: '2d', width: w, height: h })
+        const ctx = canvas.getContext('2d')
+        const img = canvas.createImage()
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, w, h)
+          // 导出为 base64（quality 0.6）
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.6)
+          const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, '')
+          console.log('压缩后图片大小:', Math.round(base64.length / 1024), 'KB')
+          that.identifyImage(base64)
+        }
+        img.onerror = () => {
+          // canvas 方式失败，回退到 compressImage
+          that.fallbackCompress(filePath)
+        }
+        img.src = filePath
+      },
+      fail() {
+        that.fallbackCompress(filePath)
+      },
+    })
+  },
+
+  fallbackCompress(filePath) {
+    wx.compressImage({
+      src: filePath,
+      quality: 20,
+      success: (compRes) => {
+        this.readAndIdentify(compRes.tempFilePath)
+      },
+      fail: () => {
+        this.readAndIdentify(filePath)
       },
     })
   },
@@ -86,6 +191,18 @@ Page({
   },
 
   async identifyImage(base64) {
+    const sizeKB = Math.round(base64.length / 1024)
+    console.log('图片大小:', sizeKB, 'KB')
+    if (sizeKB > 100) {
+      wx.hideLoading()
+      this.setData({ identifying: false })
+      wx.showModal({
+        title: '图片太大',
+        content: `当前图片 ${sizeKB}KB，超出限制。请选择一张更小的图片，或使用相机拍摄时离近一些。`,
+        showCancel: false,
+      })
+      return
+    }
     try {
       console.log('识别图片大小:', Math.round(base64.length / 1024), 'KB')
       const result = await api.post('/api/plants/identify', { image: base64 })
@@ -127,7 +244,7 @@ Page({
   },
 
   async handleSubmit() {
-    const { name, wateringInterval, category, note, mode, plantId } = this.data
+    const { name, wateringInterval, category, note, mode, plantId, photoUrl } = this.data
     if (!name.trim()) {
       wx.showToast({ title: '请输入植物名称', icon: 'none' })
       return
@@ -139,6 +256,7 @@ Page({
       watering_interval: wateringInterval,
       category,
       note: note || null,
+      photo_url: photoUrl || null,
     }
 
     try {

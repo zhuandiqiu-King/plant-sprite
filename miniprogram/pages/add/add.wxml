@@ -4,6 +4,19 @@
     <text>📷 拍照识别植物</text>
   </view>
 
+  <!-- 植物照片（可选） -->
+  <view class="photo-section">
+    <text class="label">植物照片（可选）</text>
+    <view class="photo-picker" wx:if="{{!photoLocalPath && !photoUrl}}" bindtap="handleChoosePhoto">
+      <text class="photo-add-icon">+</text>
+      <text class="photo-add-text">添加照片</text>
+    </view>
+    <view class="photo-preview" wx:if="{{photoLocalPath || photoUrl}}">
+      <image class="photo-img" src="{{photoLocalPath || photoUrl}}" mode="aspectFill" bindtap="handlePreviewPhoto" />
+      <view class="photo-remove" bindtap="handleRemovePhoto">×</view>
+    </view>
+  </view>
+
   <!-- 表单 -->
   <view class="form">
     <view class="form-item">

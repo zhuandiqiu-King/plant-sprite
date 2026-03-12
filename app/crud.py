@@ -16,6 +16,7 @@ def create_plant(db: Session, data: PlantCreate, user_id: int | None = None) -> 
         watering_interval=data.watering_interval,
         category=data.category.value,
         note=data.note,
+        photo_url=data.photo_url,
         next_watering_date=date.today() + timedelta(days=data.watering_interval),
         user_id=user_id,
     )

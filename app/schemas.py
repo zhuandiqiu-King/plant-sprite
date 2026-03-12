@@ -18,6 +18,7 @@ class PlantCreate(BaseModel):
     watering_interval: int = Field(..., gt=0, le=365, examples=[7])
     category: CategoryEnum = CategoryEnum.indoor
     note: Optional[str] = None
+    photo_url: Optional[str] = None
 
 
 class PlantUpdate(BaseModel):
@@ -25,6 +26,7 @@ class PlantUpdate(BaseModel):
     watering_interval: Optional[int] = Field(None, gt=0, le=365)
     category: Optional[CategoryEnum] = None
     note: Optional[str] = None
+    photo_url: Optional[str] = None
 
 
 class PlantOut(BaseModel):
@@ -33,6 +35,7 @@ class PlantOut(BaseModel):
     watering_interval: int
     category: str
     note: Optional[str]
+    photo_url: Optional[str]
     next_watering_date: date
     created_at: datetime
     updated_at: datetime

@@ -16,6 +16,65 @@
   background: #c8e6c9;
 }
 
+/* 照片选择区域 */
+.photo-section {
+  margin-bottom: 32rpx;
+}
+
+.photo-picker {
+  width: 200rpx;
+  height: 200rpx;
+  border: 2rpx dashed #ccc;
+  border-radius: 16rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+
+.photo-picker:active {
+  background: #f0f0f0;
+}
+
+.photo-add-icon {
+  font-size: 64rpx;
+  color: #999;
+  line-height: 1;
+}
+
+.photo-add-text {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+.photo-preview {
+  position: relative;
+  width: 200rpx;
+  height: 200rpx;
+}
+
+.photo-img {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 16rpx;
+}
+
+.photo-remove {
+  position: absolute;
+  top: -16rpx;
+  right: -16rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 40rpx;
+  font-size: 28rpx;
+}
+
 .form {
   background: #fff;
   border-radius: 16rpx;

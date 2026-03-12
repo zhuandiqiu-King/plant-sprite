@@ -1,6 +1,9 @@
 <view class="container" wx:if="{{plant}}">
   <!-- 植物信息 -->
   <view class="info-card">
+    <!-- 植物照片 -->
+    <image wx:if="{{plant.photo_url}}" class="plant-photo" src="{{plant.photo_url}}" mode="aspectFill" bindtap="handlePreviewPhoto" />
+
     <view class="info-header">
       <text class="plant-name">{{plant.name}}</text>
       <text class="plant-category">{{plant.category === 'indoor' ? '室内' : '室外'}}</text>

@@ -45,6 +45,13 @@ Page({
     wx.navigateTo({ url: `/pages/add/add?id=${this.data.plantId}` })
   },
 
+  handlePreviewPhoto() {
+    const url = this.data.plant.photo_url
+    if (url) {
+      wx.previewImage({ urls: [url], current: url })
+    }
+  },
+
   handleDelete() {
     wx.showModal({
       title: '确认删除',
