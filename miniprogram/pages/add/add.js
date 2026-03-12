@@ -351,7 +351,9 @@ Page({
   },
 
   onIntervalInput(e) {
-    this.setData({ wateringInterval: parseInt(e.detail.value) || 1 })
+    const val = e.detail.value
+    // 允许用户清空输入框，提交时再校验
+    this.setData({ wateringInterval: val === '' ? '' : (parseInt(val) || '') })
   },
 
   onCategoryChange(e) {
@@ -372,6 +374,11 @@ Page({
       wx.showToast({ title: '请输入植物名称', icon: 'none' })
       return
     }
+    const interval = parseInt(wateringInterval)
+    if (!interval || interval < 1) {
+      wx.showToast({ title: '请输入有效的浇水间隔', icon: 'none' })
+      return
+    }
     // 名称重复时阻止提交
     if (nameError) {
       wx.showToast({ title: nameError, icon: 'none' })
@@ -389,7 +396,7 @@ Page({
 
     const payload = {
       name: name.trim(),
-      watering_interval: wateringInterval,
+      watering_interval: interval,
       category,
       note: note || null,
       photo_url: photoUrl || null,
