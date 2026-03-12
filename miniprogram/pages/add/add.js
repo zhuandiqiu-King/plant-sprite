@@ -13,7 +13,7 @@ Page({
     categoryIndex: 0,
     identifying: false,
     submitting: false,
-    photoUrl: '',      // 云存储 fileID
+    photoUrl: '',      // 云存储 fileID 或 base64 data URI
     photoLocalPath: '', // 本地预览临时路径
   },
 
@@ -57,11 +57,11 @@ Page({
   },
 
   handleRemovePhoto() {
-    const oldFileID = this.data.photoUrl
+    const oldUrl = this.data.photoUrl
     this.setData({ photoUrl: '', photoLocalPath: '' })
-    // 清理云存储中的旧文件
-    if (oldFileID) {
-      wx.cloud.deleteFile({ fileList: [oldFileID] })
+    // 如果是云存储 fileID，尝试清理
+    if (oldUrl && oldUrl.startsWith('cloud://')) {
+      wx.cloud.deleteFile({ fileList: [oldUrl] })
     }
   },
 
@@ -72,6 +72,7 @@ Page({
     }
   },
 
+  // 优先上传到云存储，失败则回退到 base64
   uploadToCloud(filePath) {
     wx.showLoading({ title: '上传中...' })
     const cloudPath = `plant-photos/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`
@@ -79,21 +80,83 @@ Page({
     wx.cloud.uploadFile({
       cloudPath,
       filePath,
+      config: { env: 'prod-0g02is9d648082af' },
       success: (res) => {
         this.setData({ photoUrl: res.fileID })
+        wx.hideLoading()
         wx.showToast({ title: '照片已上传', icon: 'success' })
       },
       fail: (err) => {
-        console.error('上传照片失败', err)
-        this.setData({ photoLocalPath: '' })
-        wx.showModal({
-          title: '上传失败',
-          content: '照片上传失败，请稍后重试。你可以先填写其他信息。',
-          showCancel: false,
-        })
+        console.warn('云存储上传失败，回退到 base64', err)
+        // 回退：压缩后转 base64 存数据库
+        this.compressAndEncode(filePath)
       },
-      complete: () => {
+    })
+  },
+
+  // 回退方案：压缩图片并转为 base64 data URI
+  compressAndEncode(filePath) {
+    const that = this
+    wx.getImageInfo({
+      src: filePath,
+      success(info) {
+        const maxSize = 400
+        let w = info.width
+        let h = info.height
+        if (w > h && w > maxSize) {
+          h = Math.round(h * maxSize / w)
+          w = maxSize
+        } else if (h > maxSize) {
+          w = Math.round(w * maxSize / h)
+          h = maxSize
+        }
+
+        const canvas = wx.createOffscreenCanvas({ type: '2d', width: w, height: h })
+        const ctx = canvas.getContext('2d')
+        const img = canvas.createImage()
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, w, h)
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.6)
+          that.setData({ photoUrl: dataUrl })
+          wx.hideLoading()
+        }
+        img.onerror = () => {
+          that.fallbackCompressPhoto(filePath)
+        }
+        img.src = filePath
+      },
+      fail() {
+        that.fallbackCompressPhoto(filePath)
+      },
+    })
+  },
+
+  fallbackCompressPhoto(filePath) {
+    wx.compressImage({
+      src: filePath,
+      quality: 30,
+      success: (compRes) => {
+        this.readFileAsDataUrl(compRes.tempFilePath)
+      },
+      fail: () => {
+        this.readFileAsDataUrl(filePath)
+      },
+    })
+  },
+
+  readFileAsDataUrl(filePath) {
+    const fs = wx.getFileSystemManager()
+    fs.readFile({
+      filePath,
+      encoding: 'base64',
+      success: (res) => {
+        this.setData({ photoUrl: `data:image/jpeg;base64,${res.data}` })
         wx.hideLoading()
+      },
+      fail: () => {
+        wx.hideLoading()
+        this.setData({ photoLocalPath: '' })
+        wx.showToast({ title: '处理照片失败', icon: 'none' })
       },
     })
   },

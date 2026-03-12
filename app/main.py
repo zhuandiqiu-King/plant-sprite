@@ -15,7 +15,7 @@ Base.metadata.create_all(bind=engine)
 with engine.connect() as conn:
     columns = [col["name"] for col in inspect(engine).get_columns("plants")]
     if "photo_url" not in columns:
-        conn.execute(text("ALTER TABLE plants ADD COLUMN photo_url VARCHAR(500)"))
+        conn.execute(text("ALTER TABLE plants ADD COLUMN photo_url TEXT"))
         conn.commit()
 
 app = FastAPI(title="Plant Sprite", description="植物浇水提醒服务", version="1.0.0")

@@ -29,7 +29,7 @@ class Plant(Base):
     watering_interval: Mapped[int] = mapped_column(Integer, nullable=False)
     category: Mapped[str] = mapped_column(String(20), default="indoor")
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    photo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    photo_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     next_watering_date: Mapped[date] = mapped_column(Date, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(
