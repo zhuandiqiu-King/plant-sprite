@@ -1,16 +1,44 @@
 <view class="container">
-  <!-- 浇水提醒区 -->
+  <!-- 浇水清单 -->
   <view class="reminder-section" wx:if="{{reminders.length > 0}}">
-    <view class="section-title">💧 今日浇水提醒</view>
+    <view class="reminder-header">
+      <view class="section-title">💧 今日浇水清单</view>
+      <view class="water-all-btn" bindtap="handleWaterAll" wx:if="{{reminders.length > 1}}">
+        <text>{{watering ? '浇水中...' : '🚿 全部浇水'}}</text>
+      </view>
+    </view>
     <view class="reminder-list">
       <view class="reminder-item" wx:for="{{reminders}}" wx:key="id">
-        <text>{{item.name}}</text>
+        <view class="reminder-left">
+          <image
+            wx:if="{{item.photo_url}}"
+            class="reminder-photo"
+            src="{{item.photo_url}}"
+            mode="aspectFill"
+          />
+          <view wx:else class="reminder-photo-placeholder">🌱</view>
+          <view class="reminder-info">
+            <text class="reminder-name">{{item.name}}</text>
+            <text class="reminder-interval">每{{item.watering_interval}}天 · {{item.category === 'indoor' ? '室内' : '室外'}}</text>
+          </view>
+        </view>
+        <view
+          class="water-btn"
+          data-id="{{item.id}}"
+          data-name="{{item.name}}"
+          catchtap="handleWaterOne"
+        >💧</view>
       </view>
     </view>
   </view>
 
+  <!-- 全部浇完的提示 -->
+  <view class="all-done" wx:if="{{!loading && reminders.length === 0 && plants.length > 0}}">
+    <text>🌈 今天的植物都已浇水，真棒！</text>
+  </view>
+
   <!-- 植物列表 -->
-  <view class="section-title" wx:if="{{plants.length > 0}}">我的植物</view>
+  <view class="section-title plant-list-title" wx:if="{{plants.length > 0}}">🌿 我的植物</view>
   <plant-card
     wx:for="{{plants}}"
     wx:key="id"
@@ -20,7 +48,7 @@
 
   <!-- 空状态 -->
   <view class="empty" wx:if="{{!loading && plants.length === 0}}">
-    <text class="empty-icon">🌿</text>
+    <text class="empty-icon">🌱</text>
     <text class="empty-text">还没有植物，点击下方按钮添加吧</text>
   </view>
 

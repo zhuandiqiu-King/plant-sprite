@@ -1,10 +1,25 @@
 <view class="card" bindtap="onTap">
-  <view class="card-header">
-    <text class="plant-name">{{plant.name}}</text>
-    <text class="plant-category">{{plant.category === 'indoor' ? '室内' : '室外'}}</text>
+  <!-- 左侧图片 -->
+  <view class="card-photo-wrap">
+    <image
+      wx:if="{{plant.photo_url}}"
+      class="card-photo"
+      src="{{plant.photo_url}}"
+      mode="aspectFill"
+    />
+    <view wx:else class="card-photo-placeholder">
+      <text>{{plant.category === 'indoor' ? '🪴' : '🌳'}}</text>
+    </view>
   </view>
-  <view class="card-body">
-    <text class="interval">每 {{plant.watering_interval}} 天浇水</text>
-    <text class="status {{statusClass}}">{{statusText}}</text>
+  <!-- 右侧信息 -->
+  <view class="card-content">
+    <view class="card-header">
+      <text class="plant-name">{{plant.name}}</text>
+      <text class="plant-category">{{plant.category === 'indoor' ? '🏠 室内' : '☀️ 室外'}}</text>
+    </view>
+    <view class="card-body">
+      <text class="interval">🕐 每 {{plant.watering_interval}} 天浇水</text>
+      <text class="status {{statusClass}}">{{statusEmoji}} {{statusText}}</text>
+    </view>
   </view>
 </view>

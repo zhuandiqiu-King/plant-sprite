@@ -6,6 +6,7 @@ Component({
   data: {
     statusText: '',
     statusClass: '',
+    statusEmoji: '',
   },
 
   lifetimes: {
@@ -27,11 +28,11 @@ Component({
       const today = new Date().toISOString().slice(0, 10)
       const next = p.next_watering_date
       if (next < today) {
-        this.setData({ statusText: '需要浇水', statusClass: 'status-overdue' })
+        this.setData({ statusText: '需要浇水', statusClass: 'status-overdue', statusEmoji: '🚨' })
       } else if (next === today) {
-        this.setData({ statusText: '今天浇水', statusClass: 'status-today' })
+        this.setData({ statusText: '今天浇水', statusClass: 'status-today', statusEmoji: '💧' })
       } else {
-        this.setData({ statusText: `${next} 浇水`, statusClass: 'status-ok' })
+        this.setData({ statusText: `${next} 浇水`, statusClass: 'status-ok', statusEmoji: '🌱' })
       }
     },
 
