@@ -14,8 +14,20 @@ Page({
   },
 
   onLoad() {
+    // 录音真正启动回调
+    recorderManager.onStart(() => {
+      this._recorderStarted = true
+      this.setData({ recording: true })
+      // 如果在启动前用户已松手，立即停止
+      if (this._pendingStop) {
+        this._pendingStop = false
+        recorderManager.stop()
+      }
+    })
+
     // 录音结束回调
     recorderManager.onStop((res) => {
+      this._recorderStarted = false
       this.setData({ recording: false })
       if (res.duration < 1000) {
         wx.showToast({ title: '说话时间太短', icon: 'none' })
@@ -26,8 +38,9 @@ Page({
 
     recorderManager.onError((err) => {
       console.error('录音失败', err)
+      this._recorderStarted = false
+      this._pendingStop = false
       this.setData({ recording: false })
-      wx.showToast({ title: '录音失败，请重试', icon: 'none' })
     })
   },
 
@@ -124,7 +137,8 @@ Page({
   },
 
   _doStartRecord() {
-    this.setData({ recording: true })
+    this._recorderStarted = false
+    this._pendingStop = false
     recorderManager.start({
       duration: 60000,
       sampleRate: 16000,
@@ -136,8 +150,12 @@ Page({
 
   // 松手停止录音
   stopRecord() {
-    if (this.data.recording) {
+    if (this._recorderStarted) {
+      // 录音已启动，直接停止
       recorderManager.stop()
+    } else {
+      // 录音还没启动完成，标记待停止
+      this._pendingStop = true
     }
   },
 
