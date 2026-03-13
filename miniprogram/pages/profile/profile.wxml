@@ -89,7 +89,7 @@
       <view class="item-icon icon-family">👨‍👩‍👧</view>
       <text class="item-label">我的家庭</text>
       <view class="item-value">
-        <text>{{currentFamilyName || '个人空间'}}</text>
+        <text>{{currentFamilyName || '去搭一个夯夯家'}}</text>
         <text class="arrow">›</text>
       </view>
     </view>

@@ -16,10 +16,8 @@ from app import crud
 router = APIRouter(prefix="/api/plants", tags=["plants"])
 
 
-def _get_family_id(current_user: User) -> int:
-    """获取当前用户的活跃家庭 ID"""
-    if not current_user.current_family_id:
-        raise HTTPException(status_code=400, detail="请先加入或创建一个家庭")
+def _get_family_id(current_user: User) -> int | None:
+    """获取当前用户的活跃家庭 ID，没有家庭返回 None"""
     return current_user.current_family_id
 
 

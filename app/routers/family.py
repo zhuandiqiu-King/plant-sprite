@@ -68,28 +68,16 @@ def _generate_code(length: int = 8) -> str:
     return "".join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
 
-def ensure_personal_family(db: Session, user: User) -> Family:
-    """幂等地为用户创建个人家庭，返回该家庭"""
-    personal = db.scalars(
-        select(Family).where(
-            Family.created_by == user.id, Family.is_personal.is_(True)
-        )
-    ).first()
-    if personal:
-        return personal
-    personal = Family(name="我的植物", created_by=user.id, is_personal=True)
-    db.add(personal)
-    db.flush()
-    db.add(FamilyMember(family_id=personal.id, user_id=user.id, role="admin"))
-    db.flush()
-    if not user.current_family_id:
-        user.current_family_id = personal.id
-    db.commit()
-    db.refresh(personal)
-    return personal
+def _get_first_family_id(db: Session, user_id: int, exclude_id: int = None) -> int | None:
+    """获取用户的第一个家庭 ID（排除指定的）"""
+    stmt = select(FamilyMember.family_id).where(FamilyMember.user_id == user_id)
+    if exclude_id:
+        stmt = stmt.where(FamilyMember.family_id != exclude_id)
+    row = db.scalars(stmt).first()
+    return row
 
 
-# ---- 接口 ----
+# ---- 固定路径接口（必须在动态路径 /{family_id} 之前） ----
 
 @router.post("", response_model=FamilyOut)
 def create_family(
@@ -97,11 +85,14 @@ def create_family(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """创建新家庭"""
+    """搭一个夯夯家"""
     fam = Family(name=req.name, created_by=current_user.id)
     db.add(fam)
     db.flush()
     db.add(FamilyMember(family_id=fam.id, user_id=current_user.id, role="admin"))
+    # 如果用户还没有当前家庭，自动设为当前
+    if not current_user.current_family_id:
+        current_user.current_family_id = fam.id
     db.commit()
     db.refresh(fam)
     return _build_family_out(db, fam, current_user.id)
@@ -123,6 +114,54 @@ def list_families(
             result.append(_build_family_out(db, fam, current_user.id))
     return result
 
+
+@router.put("/switch", response_model=FamilyOut)
+def switch_family(
+    req: SwitchFamilyRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """切换当前家庭"""
+    _require_membership(db, req.family_id, current_user.id)
+    current_user.current_family_id = req.family_id
+    db.commit()
+    fam = db.get(Family, req.family_id)
+    return _build_family_out(db, fam, current_user.id)
+
+
+@router.post("/join", response_model=FamilyOut)
+def join_family(
+    req: JoinFamilyRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """通过邀请码加入家庭"""
+    fam = db.scalars(
+        select(Family).where(Family.invite_code == req.invite_code)
+    ).first()
+    if not fam:
+        raise HTTPException(status_code=400, detail="邀请码无效，请联系家庭管理员重新邀请")
+    if fam.invite_expires_at and fam.invite_expires_at < datetime.now():
+        raise HTTPException(status_code=400, detail="邀请码已过期，请联系管理员重新生成")
+
+    # 检查是否已是成员
+    existing = db.scalars(
+        select(FamilyMember).where(
+            FamilyMember.family_id == fam.id,
+            FamilyMember.user_id == current_user.id,
+        )
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="你已经是这个家庭的成员了")
+
+    db.add(FamilyMember(family_id=fam.id, user_id=current_user.id, role="member"))
+    # 自动切换到新家庭
+    current_user.current_family_id = fam.id
+    db.commit()
+    return _build_family_out(db, fam, current_user.id)
+
+
+# ---- 动态路径接口 /{family_id} ----
 
 @router.get("/{family_id}", response_model=FamilyDetailOut)
 def get_family(
@@ -179,25 +218,11 @@ def dissolve_family(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """解散家庭（仅管理员，不可解散个人家庭）"""
+    """解散家庭（仅管理员）"""
     _require_admin(db, family_id, current_user.id)
     fam = db.get(Family, family_id)
     if not fam:
         raise HTTPException(status_code=404, detail="家庭不存在")
-    if fam.is_personal:
-        raise HTTPException(status_code=400, detail="个人空间无法解散")
-
-    # 将该家庭的植物归到创建者的个人家庭
-    personal = db.scalars(
-        select(Family).where(
-            Family.created_by == current_user.id, Family.is_personal.is_(True)
-        )
-    ).first()
-    if personal:
-        from app.models import Plant
-        db.query(Plant).filter(Plant.family_id == family_id).update(
-            {"family_id": personal.id}
-        )
 
     # 重置成员的 current_family_id
     members = db.scalars(
@@ -206,13 +231,14 @@ def dissolve_family(
     for m in members:
         u = db.get(User, m.user_id)
         if u and u.current_family_id == family_id:
-            # 切到该用户的个人家庭
-            p = db.scalars(
-                select(Family).where(
-                    Family.created_by == u.id, Family.is_personal.is_(True)
-                )
-            ).first()
-            u.current_family_id = p.id if p else None
+            alt = _get_first_family_id(db, u.id, exclude_id=family_id)
+            u.current_family_id = alt
+
+    # 删除家庭下的植物关联（植物 family_id 置空）
+    from app.models import Plant
+    db.query(Plant).filter(Plant.family_id == family_id).update(
+        {"family_id": None}
+    )
 
     db.delete(fam)
     db.commit()
@@ -244,38 +270,6 @@ def generate_invite(
     return InviteOut(invite_code=code, expires_at=fam.invite_expires_at)
 
 
-@router.post("/join", response_model=FamilyOut)
-def join_family(
-    req: JoinFamilyRequest,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """通过邀请码加入家庭"""
-    fam = db.scalars(
-        select(Family).where(Family.invite_code == req.invite_code)
-    ).first()
-    if not fam:
-        raise HTTPException(status_code=400, detail="邀请码无效，请联系家庭管理员重新邀请")
-    if fam.invite_expires_at and fam.invite_expires_at < datetime.now():
-        raise HTTPException(status_code=400, detail="邀请码已过期，请联系管理员重新生成")
-
-    # 检查是否已是成员
-    existing = db.scalars(
-        select(FamilyMember).where(
-            FamilyMember.family_id == fam.id,
-            FamilyMember.user_id == current_user.id,
-        )
-    ).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="你已经是这个家庭的成员了")
-
-    db.add(FamilyMember(family_id=fam.id, user_id=current_user.id, role="member"))
-    # 自动切换到新家庭
-    current_user.current_family_id = fam.id
-    db.commit()
-    return _build_family_out(db, fam, current_user.id)
-
-
 @router.delete("/{family_id}/members/{user_id}")
 def remove_member(
     family_id: int,
@@ -298,12 +292,8 @@ def remove_member(
     # 重置被移除者的 current_family_id
     target = db.get(User, user_id)
     if target and target.current_family_id == family_id:
-        p = db.scalars(
-            select(Family).where(
-                Family.created_by == user_id, Family.is_personal.is_(True)
-            )
-        ).first()
-        target.current_family_id = p.id if p else None
+        alt = _get_first_family_id(db, user_id, exclude_id=family_id)
+        target.current_family_id = alt
     db.delete(member)
     db.commit()
     return {"detail": "成员已移除"}
@@ -343,33 +333,16 @@ def transfer_admin(
     return {"detail": "管理员已转让"}
 
 
-@router.put("/switch", response_model=FamilyOut)
-def switch_family(
-    req: SwitchFamilyRequest,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """切换当前家庭"""
-    _require_membership(db, req.family_id, current_user.id)
-    current_user.current_family_id = req.family_id
-    db.commit()
-    fam = db.get(Family, req.family_id)
-    return _build_family_out(db, fam, current_user.id)
-
-
 @router.post("/{family_id}/leave")
 def leave_family(
     family_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """退出家庭（管理员需先转让）"""
+    """退出家庭"""
     member = _require_membership(db, family_id, current_user.id)
     fam = db.get(Family, family_id)
-    if fam.is_personal:
-        raise HTTPException(status_code=400, detail="不能退出个人空间")
     if member.role == "admin":
-        # 检查是否还有其他成员
         count = db.scalar(
             select(func.count()).where(FamilyMember.family_id == family_id)
         )
@@ -380,12 +353,8 @@ def leave_family(
             )
     # 重置 current_family_id
     if current_user.current_family_id == family_id:
-        p = db.scalars(
-            select(Family).where(
-                Family.created_by == current_user.id, Family.is_personal.is_(True)
-            )
-        ).first()
-        current_user.current_family_id = p.id if p else None
+        alt = _get_first_family_id(db, current_user.id, exclude_id=family_id)
+        current_user.current_family_id = alt
     db.delete(member)
     db.commit()
     return {"detail": "已退出家庭"}

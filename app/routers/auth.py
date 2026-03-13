@@ -62,10 +62,7 @@ async def login(req: WxLoginRequest, db: Session = Depends(get_db)):
                 avatar_url = f"emoji:{emoji}"
         user = User(openid=openid, nickname=nickname, avatar_url=avatar_url)
         db.add(user)
-        db.flush()
-        # 自动创建个人家庭
-        from app.routers.family import ensure_personal_family
-        ensure_personal_family(db, user)
+        db.commit()
         db.refresh(user)
     else:
         if req.nickname:

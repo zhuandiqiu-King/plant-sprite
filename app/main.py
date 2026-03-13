@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import inspect, text
 
-from app.database import engine, Base, SessionLocal
+from app.database import engine, Base
 from app.routers import plants, watering, auth, chat, user, family
 from app.scheduler import start_scheduler, stop_scheduler
 
@@ -42,44 +42,6 @@ with engine.connect() as conn:
     if "operator_id" not in wr_cols:
         conn.execute(text("ALTER TABLE watering_records ADD COLUMN operator_id INTEGER"))
         conn.commit()
-
-# 数据迁移：为已有用户创建个人家庭，把植物归到家庭下
-from app.models import User, Plant, Family, FamilyMember  # noqa: E402
-
-with SessionLocal() as db:
-    # 找有植物但没有个人家庭的用户
-    users_with_plants = (
-        db.query(User)
-        .join(Plant, Plant.user_id == User.id)
-        .filter(Plant.family_id.is_(None))
-        .distinct()
-        .all()
-    )
-    for u in users_with_plants:
-        # 检查是否已有个人家庭
-        personal = (
-            db.query(Family)
-            .filter(Family.created_by == u.id, Family.is_personal.is_(True))
-            .first()
-        )
-        if not personal:
-            personal = Family(
-                name="我的植物",
-                created_by=u.id,
-                is_personal=True,
-            )
-            db.add(personal)
-            db.flush()
-            db.add(FamilyMember(family_id=personal.id, user_id=u.id, role="admin"))
-            db.flush()
-        # 迁移该用户的植物到个人家庭
-        db.query(Plant).filter(
-            Plant.user_id == u.id, Plant.family_id.is_(None)
-        ).update({"family_id": personal.id, "created_by": u.id})
-        # 设置当前家庭
-        if not u.current_family_id:
-            u.current_family_id = personal.id
-    db.commit()
 
 app = FastAPI(title="夯夯家", description="家庭生活助手服务", version="2.0.0")
 

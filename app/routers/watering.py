@@ -10,9 +10,8 @@ from app import crud
 router = APIRouter(tags=["watering"])
 
 
-def _get_family_id(current_user: User) -> int:
-    if not current_user.current_family_id:
-        raise HTTPException(status_code=400, detail="请先加入或创建一个家庭")
+def _get_family_id(current_user: User) -> int | None:
+    return current_user.current_family_id
     return current_user.current_family_id
 
 

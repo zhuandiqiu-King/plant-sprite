@@ -46,16 +46,20 @@ Page({
     wx.navigateTo({ url: `/pages/family/detail/detail?id=${id}` })
   },
 
-  // 创建家庭
+  // 搭一个夯夯家
   handleCreate() {
     wx.showModal({
-      title: '创建家庭',
+      title: '搭一个夯夯家',
       editable: true,
-      placeholderText: '输入家庭名称',
+      placeholderText: '给家庭起个名字吧',
       success: async (res) => {
         if (!res.confirm || !res.content || !res.content.trim()) return
         try {
           const fam = await api.post('/api/family', { name: res.content.trim() })
+          // 自动切换到新家庭
+          const app = getApp()
+          app.globalData.currentFamilyId = fam.id
+          app.globalData.currentFamilyName = fam.name
           wx.showToast({ title: '创建成功', icon: 'success' })
           this.loadFamilies()
         } catch (err) {

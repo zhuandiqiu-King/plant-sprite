@@ -31,11 +31,11 @@
   <!-- 空状态 -->
   <view class="empty" wx:if="{{!loading && !families.length}}">
     <text class="empty-icon">🏠</text>
-    <text class="empty-text">还没有家庭，创建一个吧</text>
+    <text class="empty-text">还没有家庭，搭一个夯夯家吧</text>
   </view>
 
   <!-- 创建按钮 -->
   <view class="create-wrap">
-    <view class="create-btn" bindtap="handleCreate">+ 创建新家庭</view>
+    <view class="create-btn" bindtap="handleCreate">🏠 搭一个夯夯家</view>
   </view>
 </view>
